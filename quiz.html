@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Junimea</title>
+    <link rel="icon" href="/IMAGINI/o6krgiI.png" type="image/x-icon" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+      .quiz-container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      .question {
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      .answers {
+        margin-bottom: 20px;
+      }
+      .answer {
+        display: block;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .answer.correct {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      .answer.incorrect {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+      }
+      .navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+      #result,
+      #feedback {
+        text-align: center;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+      #progress {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #666;
+      }
+      #explanation {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #e7f3fe;
+        border: 1px solid #c7e2fe;
+        border-radius: 4px;
+        color: #0c5460;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-container">
+      <h1>Junimea</h1>
+      <div id="progress"></div>
+      <div id="quiz">
+        <div class="question" id="question"></div>
+        <div class="answers" id="answers"></div>
+        <div id="explanation" style="display: none"></div>
+      </div>
+      <div class="navigation">
+        <button id="next" style="display: none">Urmatoarea intrebare</button>
+        <button id="submit" style="display: none">Finalizeaza</button>
+      </div>
+      <div id="result"></div>
+    </div>
+    <div id="high-score">Scor maxim: 0</div>
+
+    <script>
+      const quizData = [
+        {
+          question: "Când a fost fondată societatea Junimea?",
+          answers: {
+            a: "1859",
+            b: "1863",
+            c: "1877",
+            d: "1881",
+          },
+          correctAnswer: "b",
+          explanation:
+            "Junimea a fost fondată la Iași în anul 1863 de un grup de tineri intelectuali.",
+        },
+        {
+          question: "Cine a fost liderul incontestabil al Junimii?",
+          answers: {
+            a: "Mihai Eminescu",
+            b: "Ion Creangă",
+            c: "Titu Maiorescu",
+            d: "Petre P. Carp",
+          },
+          correctAnswer: "c",
+          explanation:
+            "Titu Maiorescu a fost figura centrală a Junimii, având un rol esențial în definirea ideologiei și activităților societății.",
+        },
+        {
+          question: "Care a fost revista oficială a Junimii?",
+          answers: {
+            a: "Luceafărul",
+            b: "România Literară",
+            c: "Familia",
+            d: "Convorbiri Literare",
+          },
+          correctAnswer: "d",
+          explanation:
+            " Revista Convorbiri Literare a fost publicația oficială a Junimii, fondată în 1867. Aici au fost publicate opere literare, studii critice și articole care au definit cultura românească modernă.",
+        },
+        {
+          question: "Ce curent literar a promovat Junimea?",
+          answers: {
+            a: "Romantismul",
+            b: "Realismul",
+            c: "Simbolismul",
+            d: "Avangarda",
+          },
+          correctAnswer: "b",
+          explanation:
+            "Junimea a promovat realismul în literatură, respingând excesele romantismului și susținând o literatură bazată pe observație precisă a realității și pe raționalism.",
+        },
+        {
+          question: "Ce oraș a fost centrul de activitate al Junimii?",
+          answers: {
+            a: "București",
+            b: "Cluj",
+            c: "Iași",
+            d: "Craiova",
+          },
+          correctAnswer: "c",
+          explanation:
+            "Junimea și-a desfășurat activitatea în principal la Iași, care era un important centru cultural și intelectual al României în a doua jumătate a secolului al XIX-lea.",
+        },
+        {
+          question: "Ce concept a promovat Titu Maiorescu în critică?",
+          answers: {
+            a: "Formă fără fond",
+            b: "Artă pentru artă",
+            c: "Literatură militantă",
+            d: "Realism socialist",
+          },
+          correctAnswer: "a",
+          explanation:
+            "Formă fără fond este un concept promovat de Titu Maiorescu, care susținea că literatura trebuie să aibă o formă artistică de calitate, chiar dacă mesajul (fondul) este slab",
+        },
+        {
+          question:
+            " Ce a contribuit la declinul Junimii începând cu anii 1880?",
+          answers: {
+            a: "Lipsa de interes pentru literatură",
+            b: "Presiuni din partea guvernului",
+            c: "Divergențe interne și schimbări în viața politică",
+            d: "Concurența altor societăți literare",
+          },
+          correctAnswer: "c",
+          explanation:
+            "Declinul Junimii a fost cauzat în principal de divergențele interne dintre membrii săi, precum și de schimbările din viața politică și culturală a României. Mulți dintre membrii fondatori au îmbătrânit, iar societatea a pierdut din dinamica sa inițială.",
+        },
+        {
+          question:
+            "Care a fost una dintre principalele influențe ale Junimii asupra culturii românești?",
+          answers: {
+            a: "Introducerea realismului și a criticii literare moderne",
+            b: " Promovarea romantismului în literatură",
+            c: "Susținerea avangardei artistice",
+            d: "Impunerea unui stil literar rigid și dogmatic",
+          },
+          correctAnswer: "a",
+          explanation:
+            "Junimea a avut o influență majoră asupra culturii românești prin promovarea realismului în literatură și a unei critici literare moderne, bazate pe analiza obiectivă și pe ideea de formă fără fond. Aceasta a schimbat direcția literaturii române, încurajând o abordare mai rațională și mai artistică a creației literare.",
+        },
+        {
+          question:
+            "Cine a fost primul director al revistei Convorbiri Literare?",
+          answers: {
+            a: "Titu Maiorescu",
+            b: "Petre P. Carp",
+            c: "Vasile Pogor",
+            d: "Iacob Negruzzi",
+          },
+          correctAnswer: "d",
+          explanation:
+            "Iacob Negruzzi a fost primul director al revistei Convorbiri Literare, contribuind la stabilirea direcției și a tonului publicației.",
+        },
+        {
+          question: "Nota proiectului?",
+          answers: {
+            a: "10",
+          },
+          correctAnswer: "a",
+          explanation: "Mulțumim!",
+        },
+      ];
+
+      let currentQuestion = 0;
+      let score = 0;
+
+      function showQuestion(questionIndex) {
+        const questionData = quizData[questionIndex];
+        const questionElement = document.getElementById("question");
+        const answersElement = document.getElementById("answers");
+        const progressElement = document.getElementById("progress");
+        const explanationElement = document.getElementById("explanation");
+
+        questionElement.textContent = questionData.question;
+        answersElement.innerHTML = "";
+        explanationElement.style.display = "none";
+
+        for (const letter in questionData.answers) {
+          const answerElement = document.createElement("div");
+          answerElement.classList.add("answer");
+          answerElement.textContent = `${letter}: ${questionData.answers[letter]}`;
+          answerElement.addEventListener("click", () => checkAnswer(letter));
+          answersElement.appendChild(answerElement);
+        }
+
+        progressElement.textContent = `Întrebarea ${questionIndex + 1} din ${
+          quizData.length
+        }`;
+
+        document.getElementById("next").style.display = "none";
+        document.getElementById("submit").style.display = "none";
+      }
+
+      function checkAnswer(selectedAnswer) {
+        const questionData = quizData[currentQuestion];
+        const answerElements = document.querySelectorAll(".answer");
+        const explanationElement = document.getElementById("explanation");
+
+        answerElements.forEach((element) => {
+          element.style.pointerEvents = "none";
+          if (element.textContent.startsWith(questionData.correctAnswer)) {
+            element.classList.add("correct");
+          } else if (element.textContent.startsWith(selectedAnswer)) {
+            element.classList.add("incorrect");
+          }
+        });
+
+        if (selectedAnswer === questionData.correctAnswer) {
+          score++;
+        }
+
+        explanationElement.textContent = questionData.explanation;
+        explanationElement.style.display = "block";
+
+        if (currentQuestion < quizData.length - 1) {
+          document.getElementById("next").style.display = "inline-block";
+        } else {
+          document.getElementById("submit").style.display = "inline-block";
+        }
+      }
+
+      function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+          showQuestion(currentQuestion);
+        } else {
+          showResults();
+        }
+      }
+
+      function showResults() {
+        const quizElement = document.getElementById("quiz");
+        const resultElement = document.getElementById("result");
+        const navigationElement = document.querySelector(".navigation");
+
+        quizElement.style.display = "none";
+        navigationElement.style.display = "none";
+        resultElement.innerHTML = `Ai răspuns corect la  ${score} întrebări din ${quizData.length}`;
+        resultElement.style.display = "block";
+      }
+
+      document.getElementById("next").addEventListener("click", nextQuestion);
+      document.getElementById("submit").addEventListener("click", showResults);
+
+      showQuestion(currentQuestion);
+
+      function updateHighScore() {
+        let highScore = localStorage.getItem("highScore") || 0;
+
+        if (score > highScore) {
+          localStorage.setItem("highScore", score);
+          highScore = score;
+        }
+
+        document.getElementById(
+          "high-score"
+        ).textContent = `Scorul tău maxim: ${highScore}`;
+      }
+
+      function showResults() {
+        const quizElement = document.getElementById("quiz");
+        const resultElement = document.getElementById("result");
+        const navigationElement = document.querySelector(".navigation");
+        const quizProgress = document.getElementById("progress");
+        quizProgress.style.display = "none";
+        quizElement.style.display = "none";
+        navigationElement.style.display = "none";
+
+        resultElement.innerHTML = `Ai răspuns corect la ${score} întrebări din ${quizData.length}`;
+        resultElement.style.display = "block";
+
+        updateHighScore();
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        let highScore = localStorage.getItem("highScore") || 0;
+        document.getElementById(
+          "high-score"
+        ).textContent = `Scorul tău maxim: ${highScore}`;
+      });
+    </script>
+  </body>
+</html>
